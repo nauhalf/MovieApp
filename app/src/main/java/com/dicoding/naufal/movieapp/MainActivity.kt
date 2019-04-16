@@ -1,14 +1,16 @@
 package com.dicoding.naufal.movieapp
 
+import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.View
+import android.widget.Button
 import android.widget.EditText
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), MovieAdapter.MovieListener{
 
     //deklarasi variable
     var editMovie: EditText? = null
@@ -23,6 +25,16 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setUp()
+    }
+
+    override fun onDeleteClick(movie: Movie) {
+        adapter?.deleteMovie(movie)
+    }
+
+    override fun onMovieClick(movie: Movie) {
+        val intent = Intent(this, MovieDetailActivity::class.java)
+        intent.putExtra("movie", movie)
+        startActivity(intent)
     }
 
     fun setUp() {
@@ -42,7 +54,7 @@ class MainActivity : AppCompatActivity() {
             Movie("MNO", 1998)
         )
 
-        adapter = MovieAdapter(listMovie)
+        adapter = MovieAdapter(listMovie, this)
 
         recycleMovie?.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         recycleMovie?.adapter = adapter

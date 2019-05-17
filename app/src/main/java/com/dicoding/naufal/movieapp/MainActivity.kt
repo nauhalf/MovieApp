@@ -1,25 +1,21 @@
 package com.dicoding.naufal.movieapp
 
-import android.content.Intent
+import android.content.Context
 import android.os.Bundle
-import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
+import android.widget.Toast
+import kotlinx.android.synthetic.main.activity_main.*
+import android.view.inputmethod.InputMethodManager.RESULT_UNCHANGED_SHOWN
+import android.content.Context.INPUT_METHOD_SERVICE
+import android.content.Intent
+import android.view.inputmethod.InputMethodManager
 
-class MainActivity : AppCompatActivity(), MovieAdapter.MovieListener{
 
-    //deklarasi variable
-    var editMovie: EditText? = null
-    var editYear: EditText? = null
-    var recycleMovie: RecyclerView? = null
+class MainActivity : AppCompatActivity() {
 
-    //nampung item movie
-    var listMovie: MutableList<Movie>? = null
-    var adapter: MovieAdapter? = null
+    var movieAdapter: MovieAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,50 +23,54 @@ class MainActivity : AppCompatActivity(), MovieAdapter.MovieListener{
         setUp()
     }
 
-    override fun onDeleteClick(movie: Movie) {
-        adapter?.deleteMovie(movie)
-    }
+    private fun setUp() {
+        //buat objek adapter + masukin data pertama
+        movieAdapter = MovieAdapter(movieData){
+            val intent = Intent(this@MainActivity, MovieDetailActivity::class.java)
+            intent.putExtra("title", it.title)
+            intent.putExtra("year", it.year)
+            startActivity(intent)
+        }
 
-    override fun onMovieClick(movie: Movie) {
-        val intent = Intent(this, MovieDetailActivity::class.java)
-        intent.putExtra("movie", movie)
-        startActivity(intent)
-    }
+        recyclerMovieList?.apply {
+            layoutManager = LinearLayoutManager(this@MainActivity,
+                LinearLayoutManager.VERTICAL, false)
 
-    fun setUp() {
-        //findviewbyid
-        editMovie = findViewById(R.id.editMovie)
-        editYear = findViewById(R.id.editYear)
-        recycleMovie = findViewById(R.id.recyclerMovieList)
-
-        listMovie = mutableListOf(
-            Movie("Spiderman Home Coming", 2018),
-            Movie("Avenger End Game", 2019),
-            Movie("Captain Marvel", 2019),
-            Movie("ABC", 1998),
-            Movie("DEF", 2018),
-            Movie("GHI", 2019),
-            Movie("JKL", 2019),
-            Movie("MNO", 1998)
-        )
-
-        adapter = MovieAdapter(listMovie, this)
-
-        recycleMovie?.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        recycleMovie?.adapter = adapter
+            adapter = movieAdapter
+        }
     }
 
     fun addMovieClick(view: View?) {
-        if (editMovie?.text.toString().isEmpty() == true || editYear?.text?.toString()?.isEmpty() == true) {
-            view?.let {
-                Snackbar.make(it, "Tidak boleh ada field yang kosong.", Snackbar.LENGTH_SHORT).show()
-            }
+        //validasi
+        if(editMovie?.text.isNullOrEmpty() || editYear?.text.isNullOrEmpty()){
+            Toast.makeText(this, "Isi semua kolom",
+                Toast.LENGTH_SHORT).show()
         } else {
-            val movie = Movie(editMovie?.text?.toString(), editYear?.text?.toString()?.toInt())
-            adapter?.addMovie(movie)
-            view?.let {
-                Snackbar.make(it, "Data berhasil ditambahkan.", Snackbar.LENGTH_SHORT).show()
+            //membuat object movie baru
+            val movie = Movie(
+                editMovie?.text.toString(),
+                editYear?.text.toString().toInt()
+            )
+
+            //add movie to list in adapter
+            movieAdapter?.addMovie(movie)
+
+            //hide keyboard
+            (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
+                .hideSoftInputFromWindow(
+                currentFocus.windowToken,
+                InputMethodManager.RESULT_UNCHANGED_SHOWN
+            )
+
+            //clear form
+            editMovie?.text?.clear()
+            editYear?.text?.clear()
+
+
+            movieAdapter?.list?.size?.minus(1)?.let {
+                recyclerMovieList.smoothScrollToPosition(it)
             }
+
         }
     }
 }

@@ -4,28 +4,25 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
 import android.widget.TextView
+import kotlinx.android.synthetic.main.activity_movie_detail.*
 
 class MovieDetailActivity : AppCompatActivity() {
 
-    var txtMovieName : TextView? = null
-    var txtMovieYear : TextView? = null
     var movie: Movie? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_movie_detail)
         val intent = getIntent()
-        movie = intent.getParcelableExtra("movie")
-
+        val title = intent.getStringExtra("title")
+        val year = intent.getIntExtra("year", 0)
+        movie = Movie(title, year)
         setUp()
 
     }
 
     fun setUp() {
         //findviewbyid
-        txtMovieName = findViewById(R.id.txtMovieName)
-        txtMovieYear = findViewById(R.id.txtMovieYear)
-
         txtMovieName?.text = movie?.title
         txtMovieYear?.text = movie?.year.toString()
 
@@ -40,7 +37,7 @@ class MovieDetailActivity : AppCompatActivity() {
         return when(item?.itemId){
             //set tombol back untuk kembali ke activity sebelumnya
             android.R.id.home -> {
-                onBackPressed()
+                finish()
                 true
             }
             else -> super.onOptionsItemSelected(item)
